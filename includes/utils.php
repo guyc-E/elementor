@@ -17,6 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Utils {
 
+	public static $l10n_site_locale;
+
 	const DEPRECATION_RANGE = 0.4;
 
 	const EDITOR_BREAK_LINES_OPTION_KEY = 'elementor_editor_break_lines';
@@ -778,5 +780,52 @@ class Utils {
 			->find(function ( $p ) use ( $path ) {
 				return false !== strpos( $path, $p );
 			} );
+	}
+
+	/**
+	 * Return the site locale translation.
+	 * 
+	 * There are two types of translations:
+	 * 	- Site locale - Set from WordPress admin -> Settings -> General -> Language
+	 * 	- User locale - Set from WordPress admin -> User -> Profile -> Language
+	 * 
+	 * @param string $text
+	 * 
+	 * @param string $domain
+	 * 
+	 * @return string $translation
+	 */
+	public static function site_locale__( $text, $domain = 'default' ) {
+		global $l10n;
+
+		if ( is_null( $l10n ) || ! isset( $l10n[ $domain ] ) ) {
+			return __( $text, $domain );
+		}
+
+		// if ( ! is_null( self::$l10n_site_locale ) ) {
+		// 	if ( self::$l10n_site_locale ) {
+		// 		return self::$l10n_site_locale[ $domain ]->entries[ $text ];
+		// 	}
+
+		// 	return $text;
+		// }
+		
+		$l10n_domain_backup = $l10n[ $domain ];
+
+		// Need to unset because load_textdomain function is merging the user locale with the site locale.
+		unset( $l10n[ $domain ] );
+
+		$mo_file = $domain . '-' . get_locale() . '.mo';
+
+		$is_text_domain_loaded = load_textdomain( $domain, WP_LANG_DIR . '/plugins/' . $mo_file );
+
+		// Saving the global variable l10n for performance reasons, load_textdomain function is expensive.
+		// self::$l10n_site_locale = $is_text_domain_loaded ? $l10n : false;
+
+		$translation = $is_text_domain_loaded ? __( $text, $domain ) : $text;
+
+		$l10n[ $domain ] = $l10n_domain_backup;
+
+		return $translation;
 	}
 }

@@ -3,6 +3,7 @@ namespace Elementor;
 
 use Elementor\Core\DocumentTypes\PageBase;
 use Elementor\TemplateLibrary\Source_Local;
+use Elementor\Core\Settings\Manager as SettingsManager;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -242,12 +243,18 @@ class Compatibility {
 		if ( isset( $_REQUEST['action'] ) && 0 === strpos( $_REQUEST['action'], 'elementor' ) ) {
 			add_action( 'set_current_user', function() {
 				global $current_user;
-				$current_user->locale = get_locale();
+
+				// $user_interface = SettingsManager::get_settings_managers( 'editorPreferences' )->get_model()->get_settings( 'user_interface' );
+				$elementor_preferences = get_user_meta( $current_user->ID, 'elementor_preferences' );
+				if ( ! isset( $elementor_preferences[0]['user_interface'] ) ) { // if "site language" is set in user_interface
+					$current_user->locale = get_locale();
+				}
 			} );
 
 			// Fix for Polylang
 			define( 'PLL_AJAX_ON_FRONT', true );
 
+			// What does this do? i can't find any change in the website.
 			add_action( 'pll_pre_init', function( $polylang ) {
 				if ( isset( $_REQUEST['post'] ) ) {
 					$post_language = $polylang->model->post->get_language( $_REQUEST['post'], 'locale' );
@@ -258,6 +265,12 @@ class Compatibility {
 			} );
 		}
 
+		// add_filter( 'pll_admin_preferred_language', function( $pref_lang ) {
+		// 	global $current_user;
+		// 	$elementor_preferences = get_user_meta( $current_user->ID, 'elementor_preferences' );
+		// 	$pref_lang->locale = get_locale();
+		// 	return $pref_lang;
+		// } );
 		// Copy elementor data while polylang creates a translation copy
 		add_filter( 'pll_copy_post_metas', [ __CLASS__, 'save_polylang_meta' ], 10, 4 );
 	}

@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Elementor\Core\Kits\Documents\Tabs\Global_Colors;
 use Elementor\Core\Kits\Documents\Tabs\Global_Typography;
+use Elementor\Utils;
 
 /**
  * Elementor heading widget.
@@ -115,6 +116,8 @@ class Widget_Heading extends Widget_Base {
 				],
 				'placeholder' => esc_html__( 'Enter your title', 'elementor' ),
 				'default' => esc_html__( 'Add Your Heading Text Here', 'elementor' ),
+				// 'default' => esc_html( Utils::site_locale__( 'Add Your Heading Text Here', 'elementor' ) ),
+				// 'default' => 'שדגשדג',
 			]
 		);
 
